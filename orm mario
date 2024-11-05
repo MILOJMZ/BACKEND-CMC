@@ -1,1 +1,225 @@
+------CARPETA FLASKR
+-----CARPETA MODELOS
+----__INIT__.PY
+from .modelos import *
+----MODELOS.PY
+from marshmallow import fields 
+from flask_sqlalchemy import SQLALchemy
+import enum 
 
+from marshmallow_sqlalchemy import SQLALchemyAutoSchema
+
+db = SQLALchemy()
+
+detalle_servicio_has_orden_servicio = db.Table('detalle_servicio_has_orden_servicio', \
+        db.Column('id_detalle_servicio', db.Integer, db.ForeignKey('detalle_servicio.id_detalle_servicio'), primary_key=True),
+        db.Column('id_orden_servicio', db.Integer, db.ForeignKey('orden_servicio.id_orden_servicio'), primary_key=True))
+
+class rol(db.Model):
+    id_rol = db.Column(db.Integer, primary_key = True)
+    nombre_rol = db.Column(db.String(45))
+
+class rep_legal(db.Model): 
+    rep_id = db.Column(db.Integer, primary_key = True)
+    rep_nombre = db.Column(db.String(45))
+    rep_nombreusuario = db.Column(db.String(45))
+    rep_direccion = db.Column(db.String(45))
+    rep_telefono = db.Column(db.Integer)
+    rep_contrasena = db.Column(db.String(45))
+    rol_id_rol =  db.Column(db.Integer)
+
+class categoria(db.Model): 
+    id_categoria = db.Column(db.Integer, primary_key = True)
+    cat_descripcion = db.Column(db.String(45))
+    rep_legal_rep_id = db.Column(db.Integer)
+
+class establecimiento(db.Model):
+    id_establecimiento = db.Column(db.Integer, primary_key = True)
+    correo_est = db.Column(db.String(45))
+    direccion_est = db.Column(db.String(45))
+    nombre_est = db.Column(db.String(45))
+    rep_legal_rep_id = db.Column(db.Integer)
+
+class orden_servicio(db.Model):
+    id_orden_servicio = db.Column(db.Integer, primary_key = True)
+    orden_serv_fecha = db.column(db.Date)
+    orden_serv_hora = db.Column(db.String(45))
+    orden_serv_precaucion = db.Column(db.String)
+    rep_legal_rep_id = db.Column(db.Integer)
+
+class tipo_servicio(db.Model):
+    id_tipo_servicio = db.Column(db.Integer, primary_key = True)
+    tipo_serv_suministro_emergencia = db.Column(db.string(45))
+    tipo_serv_control_roedores = db.Column(db.String(45))
+    tipo_serv_lavado_tanques = db.Column(db.String(45))
+    tipo_serv_capacitacionSST = db.Column(db.String(45))
+    tipo_serv_descripcion = db.Column(db.String(45))
+    orden_servicio_id_orden_servicio = db.Column(db.Integer)
+    
+class detalle_servicio(db.Model):
+    id_detalle_servicio = db.Column(db.Integer, primary_key = True)
+    det_serv_precio = db.Column(db.Integer)
+    det_serv_nombre_operario = db.Column(db.String(45))
+    def_serv_cantidad_producto = db.Column(db.String(45))
+    det_fin_servicio = db.Column(db.String(45))
+
+class certificado(db.Model): 
+    id_certificado = db.Column(db.Integer, primary_key = True)
+    fecha_certificado = db.Column(db.Date)
+    estado_certificado = db.Column(db.String(45))
+    orden_servicio_id_orden_servicio = db.Column(db.Integer)
+
+    class ficha_tecnica(db.Model):
+        fct_producto_aplicado = db.Column(db.String(45), primary_key = True)
+        fct_dosis = db.Column(db.String(45))
+        fct_ingrediente_activo = db.Column(db.String(45))
+        certificado_id_certificado = db.Column(db.Integer)
+        detalle_servicio_id_detalle_servicio = db.Column(db.Integer)
+(POR FUERA DE LA CARPETA MODELOS Y DENTRO DE LA CARPETA FLASKR ESTA)
+----__INIT__.PY
+from flask import Flask
+
+def create_app(config_name):
+    app = Flask(__name__)
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'MySQL///cmc.db' 
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False 
+    app.config['FLASK_RUN_PORT'] = 5001
+    return app 
+----APP.PY
+from flaskr import create_app
+from flaskr.modelos.modelos import rol, rep_legal, categoria, establecimiento, orden_servicio, tipo_servicio, detalle_servicio, certificado, ficha_tecnica
+from .modelos import db 
+#from modelos import db
+
+app = create_app('default')
+app_context = app.app_context()
+app_context.push()
+db.init_app(app)
+db.create_all()
+
+from flask import Flask, request
+
+app = Flask(__name__)
+
+@app.route('/username/<username>/password/<password>', methods=['GET', 'POST'])
+def login(username, password):
+    app.logger.info(f'Solicitud de la ruta {request.path}')
+    return f"Tu username es {username}, pero no se mostrará tu contraseña por motivos de seguridad."
+
+if __name__ == '__main__':
+    app.run(debug=True)
+
+@app.route ('/username/<username>/certificado/<certificado>', methods=['GET', 'POST'])
+def certificado(username, certificado):
+    app.logger.info(f'solicitud de la ruta {request.path}')
+    return f"querido usuario {username}, tu certificado es {certificado}"   
+
+@app.route ('/certificado/<certificado>/estado/<estado>')
+def estado(certificado, estado):
+    app.logger.info(f'solicitud de la ruta {request.path}')    
+    return f"tu certificado {certificado}, estan en estado {estado}"
+
+@app.route ('/certificado/<certificado>/fecha/<fecha>/hora/<hora>')
+def fecha(certificado, fecha, hora):
+    app.logger.info(f'solicitud de la ruta {request.path}')    
+    return f"tu certificado {certificado}, de la fecha {fecha}, y hora es{hora}"
+----REQUIREMENTS.TXT
+bcrypt==4.2.0
+click==8.1.7
+Flask==2.0.1
+Flask-Bcrypt==0.7.1
+Flask-SQLALchemy==2.5.1
+greenlet==3.1.1
+itsdangerous==2.2.0
+Jinja2==3.1.4
+MarkupSafe==2.1.5
+SQLALchemy==1.4.15
+Werkzeug==2.0.3
+Flask-Migrate==4.0.7
+Flask-MySQLdb==2.0.0
+marshmallow==3.23.0
+marshmallow-sqlalchemy==1.1.0
+mysql==0.0.3
+PyMySQL==1.0.2
+----VISTAS.PY
+from flask import request
+from flask_restful import Resource
+from .modelos import db, BuscarC, BuscarCSchema
+
+
+buscar_c_schema = BuscarCSchema()
+
+class Buscar(Resource):
+    def get(self): 
+        certificados = BuscarC.query.all()
+        return [buscar_c_schema.dump(certificado) for certificado in certificados]
+
+class AgregarCertificado(Resource):
+    def post(self):  
+        nuevo_certificado = BuscarC(
+            id_certificado=request.json['id_certificado'],
+            fecha_certificado=request.json['fecha_certificado'],
+            estado_certificado=request.json['estado_certificado'],
+            orden_servicio_id_orden_servicio=request.json['orden_servicio_id_orden_servicio'],
+        )
+        
+        db.session.add(nuevo_certificado)
+        db.session.commit()
+        return buscar_c_schema.dump(nuevo_certificado), 201 
+
+class EliminarCertificado(Resource):
+    def delete(self, id):
+        certificado = BuscarC.query.get(id)
+        if certificado:
+            db.session.delete(certificado)
+            db.session.commit()
+            return {'message': 'Certificado eliminado'}, 204  
+        return {'message': 'Certificado no encontrado'}, 404 
+
+    from .modelos import db, Usuario, UsuarioSchema
+
+usuario_schema = ()
+
+
+class VistaUsuario(Resource):
+    def get(self):
+        return [usuario_schema.dump(Usuario) for Usuario in Usuario.query.all()]
+
+    def post(self):
+        nuevo_usuario = Usuario(id_usuario = request.json['cedula_usuario'],
+                                nombre = request.json ['nombre']
+                                nombre_usuario = request.json ['nombre_usuario'],
+                                id_fiscal = request.json ['id_fiscal']
+                                email_usuario = request.json['email_usuario'],  
+                                contrasena_usuario = request.json['contrasena_usuario'],    
+                                direccion_usuario = request.json['direccion_usuario']
+                                telefono_usuario = request.json['telefono_usuario'],
+                                rol = request.json['rol'])
+        db.session.add(nuevo_usuario)
+        db.session.commit()
+        return usuario_schema.dump(nuevo_usuario)
+       
+
+    def put(self, id):
+        usuario = usuario.query.get(id)
+        if not usuario:
+            return 'Usuario no encontrado', 404
+       
+        usuario.cedula_usuario = request.json.get('cedula_usuario', usuario.cedula_usu)
+        usuario.nombre = request.json.get('nombre',usuario.nombre)
+        usuario.nombre_usuario = request.json.get('nombre_usuario', usuario.nombre_usu)
+        usuario.id_fiscal = request.json.get('id_fiscal', usuario.id_fiscal)
+        usuario.email_usuario = request.json.get('email_usuario', usuario.email_usu)
+        usuario.contrasena_usuario = request.json.get('contrasena_usuario', usuario.contrasena_usu)
+        direccion_usuario = request.json.get('direccion_usuario')
+        usuario.telefono_usuario = request.json.get('telefono_usuario', usuario.telefono_usu)
+        usuario.rol = request.json.get('rol', usuario.rol)
+
+    def delete(self, id):
+        usuario = usuario.query.get(id)
+        if not usuario:
+            return 'Usuario no encontrado', 404
+       
+        db.session.delete(usuario)
+        db.session.commit()
+        return 'El usuario fue eliminado' 
