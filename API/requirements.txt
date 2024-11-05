@@ -1,1 +1,18 @@
 #Esta seccion le corresponde a Mario rodriguez 
+bcrypt==4.2.0
+click==8.1.7
+Flask==2.0.1
+Flask-Bcrypt==0.7.1
+Flask-SQLALchemy==2.5.1
+greenlet==3.1.1
+itsdangerous==2.2.0
+Jinja2==3.1.4
+MarkupSafe==2.1.5
+SQLALchemy==1.4.15
+Werkzeug==2.0.3
+Flask-Migrate==4.0.7
+Flask-MySQLdb==2.0.0
+marshmallow==3.23.0
+marshmallow-sqlalchemy==1.1.0
+mysql==0.0.3
+PyMySQL==1.0.2
